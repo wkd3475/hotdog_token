@@ -14,7 +14,18 @@ const App = {
     },
 
     start: async function () {
-        $('#token-name').text()
+        $('#token-total').text('total supply : ' + await agContract.methods.totalSupply().call());
+        $('#token-address').text('contract address : ' + DEPLOYED_ADDRESS);
+
+        const walletFromSession = sessionStorage.getItem('walletInstance');
+        if (walletFromSession) {
+            try {
+                cav.klay.accounts.wallet.add(JSON.parse(walletFromSession));
+                this.changeUI(JSON.parse(walletFromSession));
+            } catch (e) {
+                sessionStorage.removeItem('walletInstance');
+            }
+        }
     },
 
     handleImport: async function () {
@@ -66,10 +77,32 @@ const App = {
         location.reload();
     },
 
+    getWallet: function () {
+        if (cav.klay.accounts.wallet.length) {
+            return cav.klay.accounts.wallet[0];
+        }
+    },
+
     removeWallet: function () {
         cav.klay.accounts.wallet.clear();
         sessionStorage.removeItem('walletInstance');
         this.reset();
+    },
+
+    integrateWallet: function (privateKey) {
+        const walletInstance = cav.klay.accounts.privateKeyToAccount(privateKey);
+        cav.klay.accounts.wallet.add(walletInstance);
+        sessionStorage.setItem('walletInstance', JSON.stringify(walletInstance)); 
+        this.changeUI(walletInstance);
+    },
+
+    changeUI: async function (walletInstance) {
+        $('#loginModal').modal('hide');
+        $('#login').hide();
+        $('#logout').show();
+        $('#make-wallet').hide();
+        $('#address').append('<br>' + '<p>' + '지갑 주소 : ' + walletInstance.address + '</p>');
+        $('#balance').append('<p>' + 'HotDog Token : ' + await agContract.methods.balanceOf(walletInstance.address).call() + '</p>');
     },
 
     showSpiner: function () {
@@ -82,6 +115,18 @@ const App = {
             keystore: '',
             password: ''
         };
+    },
+
+    showSendBox: async function () {
+        if ($('#send-box').is(':visible')) {
+            $('#send-box').hide();
+        } else {
+            $('#send-box').show()
+        }
+    },
+
+    transfer: async function () {
+        
     }
 };
 
