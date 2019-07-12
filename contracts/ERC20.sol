@@ -58,6 +58,7 @@ contract ERC20 is IERC20 {
      * - the caller must have a balance of at least `amount`.
      */
     function transfer(address recipient, uint256 amount) public returns (bool) {
+        require(_balances[msg.sender] >= amount, "not enough balance");
         _transfer(msg.sender, recipient, amount);
         return true;
     }

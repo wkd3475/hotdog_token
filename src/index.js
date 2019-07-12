@@ -14,9 +14,6 @@ const App = {
     },
 
     start: async function () {
-        $('#token-total').text('total supply : ' + await agContract.methods.totalSupply().call());
-        $('#token-address').text('contract address : ' + DEPLOYED_ADDRESS);
-
         const walletFromSession = sessionStorage.getItem('walletInstance');
         if (walletFromSession) {
             try {
@@ -26,6 +23,14 @@ const App = {
                 sessionStorage.removeItem('walletInstance');
             }
         }
+
+        const walletInstance = this.getWallet;
+        $("#logic-address").text(await agContract.methods.getTargetAddress().call());
+        // $('#token-total').text('total supply : ' + await agContract.methods.totalSupply().send({
+        //     from: walletInstance.address,
+        //     gas: 250000,
+        // }));
+        $('#token-address').text('contract address : ' + DEPLOYED_ADDRESS);
     },
 
     handleImport: async function () {
@@ -102,10 +107,14 @@ const App = {
         $('#logout').show();
         $('#make-wallet').hide();
         $('#address').append('<br>' + '<p>' + '지갑 주소 : ' + walletInstance.address + '</p>');
-        $('#balance').append('<p>' + 'HotDog Token : ' + await agContract.methods.balanceOf(walletInstance.address).call() + '</p>');
+        // $('#balance').append('<p>' + 'HotDog Token : ' + await agContract.methods.balanceOf(walletInstance.address).sendTransaction({
+        //     from: walletInstance.address,
+        //     gas:250000,
+        // }) + '</p>');
+        $('#send-button').show();
     },
 
-    showSpiner: function () {
+    showSpinner: function () {
         var target = document.getElementById("spin");
         return new Spinner(opts).spin(target);
     },
@@ -117,6 +126,14 @@ const App = {
         };
     },
 
+    clipboard: function (element){
+        var $temp = $("<input>");
+        $("body").append($temp);
+        $temp.val($(element).text()).select();
+        document.execCommand("copy");
+        $temp.remove();
+    },
+
     showSendBox: async function () {
         if ($('#send-box').is(':visible')) {
             $('#send-box').hide();
@@ -125,8 +142,39 @@ const App = {
         }
     },
 
+    setLogic: async function () {
+        var _address = $('#input-logic-address').val().toString();
+        const walletInstance = this.getWallet();
+        await agContract.methods.setTargetAddress(_address).send({
+            from: walletInstance.address,
+            gas: 250000,
+        });
+        alert(await agContract.methods.getTargetAddress().call());
+        $("#logic-address").text(await agContract.methods.getTargetAddress().call());
+    },
+
     transfer: async function () {
-        
+        var spinner = this.showSpinner();
+        const walletInstance = this.getWallet();
+        if (walletInstance) {
+            var amount = $('#amount').val();
+            var recipient = $('#recipient').val().toString();
+            if (amount && recipient) {
+                await agContract.methods.approve(walletInstance.address, amount).send({
+                    from: walletInstance.address,
+                    gas: 250000,
+                });
+                await agContract.methods.transfer(recipient, amount).send({
+                    from: walletInstance.address,
+                    gas: 250000,
+                });
+                spinner.stop();
+                location.reload();
+            } else {
+                return;
+            }
+        }
+        $('#send-box').hide();
     }
 };
 

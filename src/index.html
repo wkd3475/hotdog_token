@@ -44,11 +44,10 @@
         <a href="https://wallet.klaytn.com/" id="make-wallet">지갑 만들기</a>
         <br>
         <br>
-        <label id="owner" style="display: none">(owner)</label>
         <div id="address"></div>
         <div id="balance"></div>
 
-        <button type="button" class="btn btn-default" id="send-button" style="width:500px" onclick="App.showSendBox()">send</button>
+        <button type="button" class="btn btn-default" id="send-button" style="width:500px; display: none" onclick="App.showSendBox()">send</button>
         
         <div align="center" id="send-box" style="display: none">
           <table>
@@ -65,7 +64,7 @@
                 <label style="width:60px; text-align: center">Hotdog</label>
               </td>
               <td>
-                <input style="width: 440px" type="text" id="amount">
+                <input style="width:440px" type="number" id="amount">
               </td>
             </tr>
           </table>
@@ -81,11 +80,17 @@
         <br>
         <br>
         <h3>account list for test</h3>
-        <p>account1 : 0x60fe885a3e79f27e9c5b40c0cda179b627cd9466</p>
-        <p>account2 : 0xf402f8d845e659b53858c9b0394a3224089aec26</p>
+        <p>account1 : </p><p id="account1" onclick="App.clipboard('#account1')">0x60fe885a3e79f27e9c5b40c0cda179b627cd9466</p>
+        <p>account2 : </p><p id="account2" onclick="App.clipboard('#account2')">0xf402f8d845e659b53858c9b0394a3224089aec26</p>
+
+        <input style="width: 350px" type="text" id="input-logic-address"><br><br>
+        <button class="btn btn-default" id="set-logic" onclick="App.setLogic()">connect to logic</button>
+        <p id="logic-address"></p>
       </div>
     </div>
   </div>
+  
+  <div id="spin"></div>
 
   <div class="modal fade" tabindex="-1" role="dialog" id="loginModal">
       <div class="modal-dialog modal-sm">
