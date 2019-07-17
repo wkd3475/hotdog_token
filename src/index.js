@@ -24,12 +24,23 @@ const App = {
             }
         }
 
-        const walletInstance = this.getWallet;
+        const walletInstance = this.getWallet();
+        
         $("#logic-address").text(await agContract.methods.getTargetAddress().call());
-        // $('#token-total').text('total supply : ' + await agContract.methods.totalSupply().send({
-        //     from: walletInstance.address,
-        //     gas: 250000,
-        // }));
+        $('#token-total').text('total supply : ' + await cav.klay.sendTransaction({
+            type: 'SMART_CONTRACT_EXECUTION',
+            from: walletInstance.address,
+            to: DEPLOYED_ADDRESS,
+            gas: 250000,
+            data: cav.klay.abi.encodeFunctionCall({
+                name: 'totalSupply',
+                type: 'function',
+                inputs: []
+            }, [])
+        })
+        .then(function(receipt){
+            return receipt;
+        }));
         $('#token-address').text('contract address : ' + DEPLOYED_ADDRESS);
     },
 
@@ -102,16 +113,41 @@ const App = {
     },
 
     changeUI: async function (walletInstance) {
+        var spinner = this.showSpinner();
         $('#loginModal').modal('hide');
         $('#login').hide();
         $('#logout').show();
         $('#make-wallet').hide();
         $('#address').append('<br>' + '<p>' + '지갑 주소 : ' + walletInstance.address + '</p>');
-        // $('#balance').append('<p>' + 'HotDog Token : ' + await agContract.methods.balanceOf(walletInstance.address).sendTransaction({
+        // $('#balance').append('<p>' + 'HotDog Token : ' + await agContract.methods.balanceOf(walletInstance.address).send({
         //     from: walletInstance.address,
-        //     gas:250000,
+        //     gas: 250000,
         // }) + '</p>');
+
+        $('#balance').append('<p>' + 'HotDog Token : ' + await cav.klay.sendTransaction({
+            type: 'SMART_CONTRACT_EXECUTION',
+            from: walletInstance.address,
+            to: DEPLOYED_ADDRESS,
+            gas: 250000,
+            data: cav.klay.abi.encodeFunctionCall({
+                name: 'balanceOf',
+                type: 'function',
+                inputs: [{
+                    type: 'address',
+                    name: 'account'
+                }]
+            }, [walletInstance.address])
+        })
+        .then(function(receipt){
+            return JSON.stringify(receipt);
+        }) + '</p>');
+        // $('#balance').append('<p>' + 'HotDog Token : ' + await agContract.sendTransaction({
+        //     from: walletInstance.address,
+        //     gas: 250000,
+        //     data: 
+        // }));
         $('#send-button').show();
+        spinner.stop();
     },
 
     showSpinner: function () {
