@@ -20,9 +20,10 @@ contract Logic is Owner{
         }
     }
 
-    function Send(address recipient, address amount) public payable {
+    function Send(address sender, address recipient, uint256 amount) public returns(bool) {
         require(_tokenAddress != address(0), "zero address");
-        address(_tokenAddress).call(abi.encodeWithSignature("transfer(address, uint256)", recipient, amount));
+        bool result = address(_tokenAddress).call(abi.encodeWithSignature("transfer(address, uint256)", recipient, amount));
+        return result;
     }
 
     function setTokenAddress(address tokenAddress) public onlyOwner {

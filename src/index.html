@@ -47,7 +47,7 @@
         <div id="address"></div>
         <div id="balance"></div>
 
-        <button type="button" class="btn btn-default" id="send-button" style="width:500px; display: none" onclick="App.showSendBox()">send</button>
+        <button type="button" class="btn btn-default" id="send-button" style="width:500px; display: none;" onclick="App.showSendBox()">send</button>
         
         <div align="center" id="send-box" style="display: none">
           <table>
@@ -73,6 +73,37 @@
                 class="btn btn-info" 
                 id="send-hotdog"
                 onclick="App.transfer()">
+                call
+          </button>
+        </div>
+        <br>
+
+        <button type="button" class="btn btn-default" id="test-send-button" style="width:500px; display: none;" onclick="App.showTestSendBox()">test send</button>
+        
+        <div align="center" id="test-send-box" style="display: none">
+          <table>
+            <tr>
+              <td>
+                <label style="width: 60px; text-align: center">To</label>
+              </td>
+              <td>
+                <input style="width:440px;" type="text" id="test-recipient">
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label style="width:60px; text-align: center">Hotdog</label>
+              </td>
+              <td>
+                <input style="width:440px" type="number" id="test-amount">
+              </td>
+            </tr>
+          </table>
+          <button type="button"
+                style="width:500px" 
+                class="btn btn-info" 
+                id="test-send-hotdog"
+                onclick="App.testTransfer()">
                 call
           </button>
         </div>

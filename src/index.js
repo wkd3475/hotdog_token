@@ -113,6 +113,7 @@ const App = {
         $('#address').append('<br>' + '<p>' + '지갑 주소 : ' + walletInstance.address + '</p>');
         $('#balance').append('<p>' + 'HotDog Token : ' + await tokenContract.methods.balanceOf(walletInstance.address).call()/UNIT + '</p>');
         $('#send-button').show();
+        $('#test-send-button').show();
         spinner.stop();
     },
 
@@ -144,6 +145,14 @@ const App = {
         }
     },
 
+    showTestSendBox: async function () {
+        if ($('#test-send-box').is(':visible')) {
+            $('#test-send-box').hide();
+        } else {
+            $('#test-send-box').show()
+        }
+    },
+
     setToken: async function () {
         let spinner = this.showSpinner();
         let _address = $('#input-token-address').val().toString();
@@ -170,28 +179,51 @@ const App = {
     },
 
     transfer: async function () {
-        var spinner = this.showSpinner();
+        try {
+            const walletInstance = this.getWallet();
+            if (walletInstance) {
+                var amount = BigInt(parseFloat($('#amount').val()) * UNIT).toString(10);
+                var recipient = $('#recipient').val().toString();
+                if (amount && recipient) {
+                    var spinner = this.showSpinner();
+                    await tokenContract.methods.transfer(recipient, amount).send({
+                        from: walletInstance.address,
+                        gas: 250000,
+                    });
+                    spinner.stop();
+                    location.reload();
+                } else {
+                    alert("wrong input");
+                }
+            }
+        } catch(e) {
+            console.log('transfer error: ', e);
+            spinner.stop();
+        }
+
+        $('#send-box').hide();
+    },
+
+    testTransfer: async function () {
         const walletInstance = this.getWallet();
         if (walletInstance) {
-            var amount = $('#amount').val();
-            var recipient = $('#recipient').val().toString();
+            var amount = BigInt(parseFloat($('#test-amount').val()) * UNIT).toString(10);
+            var recipient = $('#test-recipient').val().toString();
             if (amount && recipient) {
-                await tokenContract.methods.approve(walletInstance.address, amount).send({
+                var spinner = this.showSpinner();
+                var result = await logicContract.methods.Send(walletInstance.address, recipient, amount).send({
                     from: walletInstance.address,
-                    gas: 250000,
+                    gas: 2500000,
                 });
-                await tokenContract.methods.transfer(recipient, amount).send({
-                    from: walletInstance.address,
-                    gas: 250000,
-                });
+                alert(JSON.stringify(result));
                 spinner.stop();
-                location.reload();
+                //location.reload();
             } else {
-                return;
+                alert("wrong input");
             }
         }
-        $('#send-box').hide();
-    }
+        $('#test-send-box').hide();
+    },
 };
 
 window.App = App;
