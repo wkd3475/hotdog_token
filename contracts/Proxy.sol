@@ -1,41 +1,32 @@
 pragma solidity ^0.4.24;
 
 import "./SafeMath.sol";
+import "./Owner.sol";
 
-contract Storage {
-    using SafeMath for uint256;
+contract Proxy is Owner {
+    address private _tokenAddress;
+    uint256 eth = 10 ** 15;
 
-    mapping (address => uint256) private _balances;
+    address public _logicAddress;
 
-    mapping (address => mapping (address => uint256)) private _allowances;
-
-    uint256 private _totalSupply;
-
-    string private _name;
-    string private _symbol;
-    uint8 private _decimals;
-
-    uint8 public constant DECIMALS = 18;
-    uint256 public constant INITIAL_SUPPLY = 10000000000 * (10 ** uint256(DECIMALS));
-}
-
-contract Proxy is Storage {
-    address public targetAddress;
+    constructor (address logicAddress) Owner() public {
+        _logicAddress = logicAddress;
+    }
 
     event FallbackCalledEvent(bytes data);
 
-    function setTargetAddress(address _address) public {
+    function setLogicAddress(address _address) public onlyOwner {
         require(_address != address(0), "error : zero address");
-        targetAddress = _address;
+        _logicAddress = _address;
     }
 
-    function getTargetAddress() public view returns (address) {
-        return targetAddress;
+    function getLogicAddress() public view returns (address) {
+        return _logicAddress;
     }
 
     function () external payable {
         emit FallbackCalledEvent(msg.data);
-        address contractAddr = targetAddress;
+        address contractAddr = _logicAddress;
         require(contractAddr != address(0), "error : zero address");
         
         assembly {

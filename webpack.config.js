@@ -12,8 +12,14 @@ module.exports = {
   },
   plugins: [   
     new webpack.DefinePlugin({
-      DEPLOYED_ADDRESS: JSON.stringify(fs.readFileSync('deployedAddress', 'utf8').replace(/\n|\r/g, "")),
-      DEPLOYED_ABI: fs.existsSync('deployedABI') && fs.readFileSync('deployedABI', 'utf8'),
+      TOKEN_ADDRESS: JSON.stringify(fs.readFileSync('tokenAddress', 'utf8').replace(/\n|\r/g, "")),
+      TOKEN_ABI: fs.existsSync('tokenABI') && fs.readFileSync('tokenABI', 'utf8'),
+      LOGIC_ADDRESS: JSON.stringify(fs.readFileSync('logicAddress', 'utf8').replace(/\n|\r/g, "")),
+      LOGIC_ABI: fs.existsSync('logicABI') && fs.readFileSync('logicABI', 'utf8'),
+      PROXY_ADDRESS: JSON.stringify(fs.readFileSync('proxyAddress', 'utf8').replace(/\n|\r/g, "")),
+      PROXY_ABI: fs.existsSync('proxyABI') && fs.readFileSync('proxyABI', 'utf8'),
+      CLIENT_ADDRESS: JSON.stringify(fs.readFileSync('clientAddress', 'utf8').replace(/\n|\r/g, "")),
+      CLIENT_ABI: fs.existsSync('clientABI') && fs.readFileSync('clientABI', 'utf8'),
     }),
     new CopyWebpackPlugin([{ from: "./src/index.html", to: "index.html"}])
   ],

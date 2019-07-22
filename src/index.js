@@ -4,8 +4,13 @@ import {Spinner} from "spin.js";
 const config = {
     rpcURL: 'https://api.baobab.klaytn.net:8651'
 }
+const UNIT = 10**18;
 const cav = new Caver(config.rpcURL);
-const agContract = new cav.klay.Contract(DEPLOYED_ABI, DEPLOYED_ADDRESS);
+const tokenContract = new cav.klay.Contract(TOKEN_ABI, TOKEN_ADDRESS);
+const logicContract = new cav.klay.Contract(LOGIC_ABI, LOGIC_ADDRESS);
+const proxyContract = new cav.klay.Contract(PROXY_ABI, PROXY_ADDRESS);
+const clientContract = new cav.klay.Contract(CLIENT_ABI, CLIENT_ADDRESS);
+
 const App = {
     auth: {
         accessType: 'keystore',
@@ -23,25 +28,12 @@ const App = {
                 sessionStorage.removeItem('walletInstance');
             }
         }
-
-        const walletInstance = this.getWallet();
         
-        $("#logic-address").text(await agContract.methods.getTargetAddress().call());
-        $('#token-total').text('total supply : ' + await cav.klay.sendTransaction({
-            type: 'SMART_CONTRACT_EXECUTION',
-            from: walletInstance.address,
-            to: DEPLOYED_ADDRESS,
-            gas: 250000,
-            data: cav.klay.abi.encodeFunctionCall({
-                name: 'totalSupply',
-                type: 'function',
-                inputs: []
-            }, [])
-        })
-        .then(function(receipt){
-            return receipt;
-        }));
-        $('#token-address').text('contract address : ' + DEPLOYED_ADDRESS);
+        $("#connected-token-address").text(await logicContract.methods.getTokenAddress().call());
+        $("#connected-logic-address").text(await proxyContract.methods.getLogicAddress().call());
+        $("#connected-proxy-address").text(await clientContract.methods.getProxyAddress().call());
+        $('#token-total').text('total supply : ' + await tokenContract.methods.totalSupply().call()/UNIT);
+        $('#token-address').text('contract address : ' + TOKEN_ADDRESS);
     },
 
     handleImport: async function () {
@@ -119,33 +111,7 @@ const App = {
         $('#logout').show();
         $('#make-wallet').hide();
         $('#address').append('<br>' + '<p>' + '지갑 주소 : ' + walletInstance.address + '</p>');
-        // $('#balance').append('<p>' + 'HotDog Token : ' + await agContract.methods.balanceOf(walletInstance.address).send({
-        //     from: walletInstance.address,
-        //     gas: 250000,
-        // }) + '</p>');
-
-        $('#balance').append('<p>' + 'HotDog Token : ' + await cav.klay.sendTransaction({
-            type: 'SMART_CONTRACT_EXECUTION',
-            from: walletInstance.address,
-            to: DEPLOYED_ADDRESS,
-            gas: 250000,
-            data: cav.klay.abi.encodeFunctionCall({
-                name: 'balanceOf',
-                type: 'function',
-                inputs: [{
-                    type: 'address',
-                    name: 'account'
-                }]
-            }, [walletInstance.address])
-        })
-        .then(function(receipt){
-            return JSON.stringify(receipt);
-        }) + '</p>');
-        // $('#balance').append('<p>' + 'HotDog Token : ' + await agContract.sendTransaction({
-        //     from: walletInstance.address,
-        //     gas: 250000,
-        //     data: 
-        // }));
+        $('#balance').append('<p>' + 'HotDog Token : ' + await tokenContract.methods.balanceOf(walletInstance.address).call()/UNIT + '</p>');
         $('#send-button').show();
         spinner.stop();
     },
@@ -178,15 +144,29 @@ const App = {
         }
     },
 
-    setLogic: async function () {
-        var _address = $('#input-logic-address').val().toString();
+    setToken: async function () {
+        let spinner = this.showSpinner();
+        let _address = $('#input-token-address').val().toString();
         const walletInstance = this.getWallet();
-        await agContract.methods.setTargetAddress(_address).send({
+        await logicContract.methods.setTokenAddress(_address).send({
             from: walletInstance.address,
             gas: 250000,
         });
-        alert(await agContract.methods.getTargetAddress().call());
-        $("#logic-address").text(await agContract.methods.getTargetAddress().call());
+        $("#connected-token-address").text(await logicContract.methods.getTokenAddress().call());
+        spinner.stop();
+
+    },
+
+    setLogic: async function () {
+        let spinner = this.showSpinner();
+        let _address = $('#input-logic-address').val().toString();
+        const walletInstance = this.getWallet();
+        await proxyContract.methods.setTokenAddress(_address).send({
+            from: walletInstance.address,
+            gas: 250000,
+        });
+        $("#connected-logic-address").text(await proxyContract.methods.getTokenAddress().call());
+        spinner.stop();
     },
 
     transfer: async function () {
@@ -196,11 +176,11 @@ const App = {
             var amount = $('#amount').val();
             var recipient = $('#recipient').val().toString();
             if (amount && recipient) {
-                await agContract.methods.approve(walletInstance.address, amount).send({
+                await tokenContract.methods.approve(walletInstance.address, amount).send({
                     from: walletInstance.address,
                     gas: 250000,
                 });
-                await agContract.methods.transfer(recipient, amount).send({
+                await tokenContract.methods.transfer(recipient, amount).send({
                     from: walletInstance.address,
                     gas: 250000,
                 });
